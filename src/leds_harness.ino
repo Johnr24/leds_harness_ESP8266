@@ -3,7 +3,7 @@
 #define NUM_LEDS 50
 #define DATA_PIN 14
 #define BUTTON_PIN 4
-#define NUM_HEX_LEDS 50
+#define NUM_HEX_LEDS 0
 CRGB leds[NUM_LEDS+NUM_HEX_LEDS]; // CRGB is effectively an array of uint8_t
 
 struct ledmode {
@@ -60,9 +60,11 @@ void meteor_loop() {
 
 
   float t = (millis() - tap_t0)/1000.0;
+  float lambda0 = 128.0;
   float lambda1 = 200.0;
   float tau0 = tap_tau/1000.0;
-
+  
+  unsigned int wval;
 
   float fdist = t/tau0 * NUM_LEDS;
 
@@ -100,6 +102,7 @@ void stripes_init() {
   unsigned int i=0;
   unsigned int j=0;
   int is1=0;
+  CRGB c = c1;
   while (i<NUM_LEDS) {
     
     if (0==is1) {
@@ -150,6 +153,7 @@ void testred_loop() {
 // Flash blue/green
 
 void testflash_loop() {
+    unsigned int flashms = 500;
     unsigned int t = millis()-tap_t0;
     if (0==((t/tap_tau)%2)) {
       all_color(0,MAXBRIGHT,0);
@@ -374,6 +378,7 @@ const unsigned char hexseg_4[] = { 33, 28, 22, 15, 29, 23, 16, 24, 17, 18, 0xff 
 const unsigned char hexseg_5[] = { 15,  9,  4,  0, 16, 10,  5, 17, 11, 18, 0xff };
 const unsigned char *hexsegs[] = { hexseg_0, hexseg_1, hexseg_2, hexseg_3, hexseg_4, hexseg_5 };
 const unsigned char hexseg_centre[] = { 6, 13, 26, 30, 23, 10 };
+const unsigned char polybius_logo[] = { 1, 6, 10, 12, 13, 14, 16, 20, 22, 24, 25, 26, 28, 29, 33, 0xff}; // (c) Yarnold Heavy Industries
 
 const unsigned char hexseg_level[] = {
   3, 3, 3, 3, 3, 2, 2, 2,
@@ -462,22 +467,23 @@ void hextri_b_iter(CRGB (*cb)(unsigned char , void *) , void *cbstatic) {
     hexseg_iter(3,cb,cbstatic);
     hexseg_iter(5,cb,cbstatic);
 }
-
+void do_logo() {
+  CRGB logo_color = CRGB(128,7,0);
+  hexlist(polybius_logo, logo_color);
+}
 void do_hex() {
-  /*
-  hexring(0,CRGB(2,2,2));
-  hexring(1,CRGB(MAXBRIGHT,0,0));
-  hexring(2,CRGB(0,2,0));
-  hexring(3,CRGB(0,0,2));
-  leds[NUM_LEDS] = CRGB(MAXBRIGHT,0,MAXBRIGHT);
-  leds[NUM_LEDS+1] = CRGB(MAXBRIGHT,0,MAXBRIGHT);
-  */
-  
+
+  // Render the central hexagon, if present
+
+#if (0 == NUM_HEX_LEDS)
+  // do nothing
+#else
   hexring(0,leds[NUM_LEDS-1]);
   hexring(1,leds[NUM_LEDS-1-4]);
   hexring(2,leds[NUM_LEDS-1-8]);
   hexring(3,leds[NUM_LEDS-1-12]);
-  
+  do_logo();
+#endif
 }
 
 /************************* Button handling *************************/
@@ -582,7 +588,6 @@ int in_long_press = false;
 void process_button() {
 
   int reading = digitalRead(BUTTON_PIN);
-  
   unsigned long now = millis();
   if (reading != last_button_state) {
     last_debounce_time = now;
