@@ -1,9 +1,9 @@
 #include <FastLED.h>
-
-#define NUM_LEDS 91
-#define DATA_PIN 7
-#define BUTTON_PIN 2
-#define NUM_HEX_LEDS 37
+#include <Arduino.h>
+#define NUM_LEDS 50
+#define DATA_PIN 14
+#define BUTTON_PIN 4
+#define NUM_HEX_LEDS 50
 CRGB leds[NUM_LEDS+NUM_HEX_LEDS]; // CRGB is effectively an array of uint8_t
 
 struct ledmode {
@@ -60,11 +60,9 @@ void meteor_loop() {
 
 
   float t = (millis() - tap_t0)/1000.0;
-  float lambda0 = 128.0;
   float lambda1 = 200.0;
   float tau0 = tap_tau/1000.0;
 
-  unsigned int wval;
 
   float fdist = t/tau0 * NUM_LEDS;
 
@@ -102,7 +100,6 @@ void stripes_init() {
   unsigned int i=0;
   unsigned int j=0;
   int is1=0;
-  CRGB c = c1;
   while (i<NUM_LEDS) {
     
     if (0==is1) {
@@ -153,7 +150,6 @@ void testred_loop() {
 // Flash blue/green
 
 void testflash_loop() {
-    unsigned int flashms = 500;
     unsigned int t = millis()-tap_t0;
     if (0==((t/tap_tau)%2)) {
       all_color(0,MAXBRIGHT,0);
@@ -563,7 +559,6 @@ void sync_taps() {
   tap_t0 = (unsigned long) t0;
   tap_tau = (unsigned long) tau;
 }
-
 void button_press_syncmode() {
     unsigned long t = last_debounce_time;
     taps[ntaps++] = t;
@@ -587,6 +582,7 @@ int in_long_press = false;
 void process_button() {
 
   int reading = digitalRead(BUTTON_PIN);
+  
   unsigned long now = millis();
   if (reading != last_button_state) {
     last_debounce_time = now;
@@ -623,7 +619,7 @@ void process_button() {
 void setup() {
   pinMode(BUTTON_PIN,INPUT);
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS + NUM_HEX_LEDS);
-  //Serial.begin(9600);
+  Serial.begin(9600);
 }
 
 CRGB cb_darker_outside(unsigned char ledno, void  *cbstatic) {
@@ -679,18 +675,24 @@ void draw_sync_mode() {
 }
 
 void loop() {
-  process_button();
-  void (*updatefn)(void ) = modes[modeno].updatefn;
-  if (NULL != updatefn) {
-    modes[modeno].updatefn();
-  }
-  if (modes[modeno].reverse) {
-      reverse_leds();
-  }
-  do_hex();
-  if (sync_mode) {
-    draw_sync_mode();
-  }
+   process_button();
+   void (*updatefn)(void ) = modes[modeno].updatefn;
+   if (NULL != updatefn) {
+     modes[modeno].updatefn();
+   }
+   if (modes[modeno].reverse) {
+       reverse_leds();
+   }
+   do_hex();
+   if (sync_mode) {
+     draw_sync_mode();
+   }
   FastLED.show();
-  //Serial.write('*');
+  Serial.write('*');
+  //Serial.println(modeno);
+  Serial.println("sync_mode");
+  Serial.println(sync_mode);
+  //Serial.println(tap_t0);
+  //Serial.println(tap_tau);
+  //Serial.println(ntaps);
 }
