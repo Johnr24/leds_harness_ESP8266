@@ -1,6 +1,5 @@
 #include <FastLED.h>
 #include <Arduino.h>
-#include <rgb2lab.h>
 #define NUM_LEDS 50
 #define DATA_PIN 14
 #define BUTTON_PIN 4
