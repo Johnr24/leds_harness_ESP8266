@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.cps": "javascript",
+        "*.yaml": "home-assistant",
+        "*.h": "cpp",
+        "map": "cpp",
+        "limits": "cpp",
+        "type_traits": "cpp",
+        "functional": "c"
+    }
+}
