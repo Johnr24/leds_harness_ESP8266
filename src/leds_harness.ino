@@ -1,9 +1,10 @@
 #include <FastLED.h>
 #include <Arduino.h>
+#include <rgb2lab.h>
 #define NUM_LEDS 50
 #define DATA_PIN 14
 #define BUTTON_PIN 4
-#define NUM_HEX_LEDS 0
+#define NUM_HEX_LEDS 50
 CRGB leds[NUM_LEDS+NUM_HEX_LEDS]; // CRGB is effectively an array of uint8_t
 
 struct ledmode {
@@ -54,11 +55,18 @@ unsigned long tap_t0 = 0;
 
 /*************************** LED Modes *****************************/
 
+void cpv(int red, int green, int blue, float &perRed, float &perGreen, float &perBlue) {
+  float redAdjuster = 0.71875;
+  float greenAdjuster = 0.359375;
+  float blueAdjuster = 1.0;
+
+  perRed = red * redAdjuster;
+  perGreen = green * greenAdjuster;
+  perBlue = blue * blueAdjuster;
+}
+
 
 void meteor_loop() {
-
-
-
   float t = (millis() - tap_t0)/1000.0;
   float lambda0 = 128.0;
   float lambda1 = 200.0;
@@ -97,7 +105,9 @@ void meteor_loop() {
 // red / blue stripes
 
 void stripes_init() {
-  CRGB c1 = CRGB(MAXBRIGHT,0,0);
+  float perRed, perGreen, perBlue;
+  cpv(MAXBRIGHT, 0, 0, perRed, perGreen, perBlue);
+  CRGB c1 = CRGB(perRed, perGreen, perBlue);
   CRGB c2 = CRGB(0,0,MAXBRIGHT);
   unsigned int i=0;
   unsigned int j=0;
@@ -152,20 +162,30 @@ void testred_loop() {
 
 // Flash blue/green
 
+void testflash_loop_cvp() {
+    float perRed, perGreen, perBlue;
+    unsigned int flashms = 500;
+    unsigned int t = millis()-tap_t0;
+    if (0==((t/tap_tau)%2)) {
+      cpv(0, MAXBRIGHT, 0, perRed, perGreen, perBlue);
+      all_color(perRed, perGreen, perBlue);
+    } else {
+      cpv(0, 0, MAXBRIGHT, perRed, perGreen, perBlue);
+      all_color(perRed, perGreen, perBlue);
+          }
+}
+
 void testflash_loop() {
     unsigned int flashms = 500;
     unsigned int t = millis()-tap_t0;
     if (0==((t/tap_tau)%2)) {
-      all_color(0,MAXBRIGHT,0);
+      all_color(0, 128, 0);
     } else {
-      all_color(0,0,MAXBRIGHT);
-    }
+      all_color(0, 0, 128);
+          }
 }
 
-// Rainbow
-
-
-
+// Rainbow pattern
 void rainbow_loop() {
   float t = (millis()-tap_t0)/1000.0;
   float lambda0 = 128.0;
@@ -299,7 +319,7 @@ void xpulses_loop() {
   const float ptau1 = 900.0;
   
   for (int i = 0; i < NUM_LEDS; i++) {
-    unsigned int wval = 64;
+    unsigned int wval = 128;
     unsigned int thewave = wave(i,t,plambda0,ptau0);
     unsigned int whue = wave(0,t,plambda1,60.0);
     int wave_on = false;
@@ -320,6 +340,8 @@ void xpulses_loop() {
 }
 
 
+
+
 struct ledmode modes[] = {
   // { NULL, dark_loop, false } , // uncomment to make the initial state dark
 
@@ -329,10 +351,15 @@ struct ledmode modes[] = {
  { NULL, smoothlines_loop, true },
  { NULL, lines_loop, false },
  { NULL, radiate_loop, true },
-
-
   { NULL, pulses_loop, true },
-  { NULL, testflash_loop, false},
+  { NULL, testflash_loop, true},
+  {NULL, testflash_loop_cvp, true},
+  { NULL, testred_loop, false},
+  { NULL, stripes_init, true},
+  { NULL, meteor_loop, true},
+  { NULL, xpulses_loop, true},
+  { NULL, rwave_loop, true},
+  { NULL, dark_loop, false },
  
   { NULL, NULL, false },
 };
@@ -695,8 +722,6 @@ void loop() {
   FastLED.show();
   Serial.write('*');
   //Serial.println(modeno);
-  Serial.println("sync_mode");
-  Serial.println(sync_mode);
   //Serial.println(tap_t0);
   //Serial.println(tap_tau);
   //Serial.println(ntaps);
