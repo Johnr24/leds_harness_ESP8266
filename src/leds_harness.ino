@@ -68,11 +68,8 @@ void cpv(int red, int green, int blue, float &perRed, float &perGreen, float &pe
 
 void meteor_loop() {
   float t = (millis() - tap_t0)/1000.0;
-  float lambda0 = 128.0;
   float lambda1 = 200.0;
   float tau0 = tap_tau/1000.0;
-  
-  unsigned int wval;
 
   float fdist = t/tau0 * NUM_LEDS;
 
@@ -112,7 +109,6 @@ void stripes_init() {
   unsigned int i=0;
   unsigned int j=0;
   int is1=0;
-  CRGB c = c1;
   while (i<NUM_LEDS) {
     
     if (0==is1) {
@@ -164,19 +160,17 @@ void testred_loop() {
 
 void testflash_loop_cvp() {
     float perRed, perGreen, perBlue;
-    unsigned int flashms = 500;
     unsigned int t = millis()-tap_t0;
     if (0==((t/tap_tau)%2)) {
       cpv(0, 0, MAXBRIGHT, perRed, perGreen, perBlue);
       all_color(perRed, perGreen, perBlue);
     } else {
-      cpv(0, MAXBRIGHT, 0, perRed, perGree nn, perBlue);
+      cpv(0, MAXBRIGHT, 0, perRed, perGreen, perBlue);
       all_color(perRed, perGreen, perBlue);
           }
 }
 
 void testflash_loop() {
-    unsigned int flashms = 500;
     unsigned int t = millis()-tap_t0;
     if (0==((t/tap_tau)%2)) {
       all_color(0, 0, 128);
@@ -315,7 +309,6 @@ void xpulses_loop() {
   const float plambda0 = 90.0;
   const float ptau0 = 1.0;
   const float plambda1 = 200.0;
-  const float ptau1 = 900.0;
   
   for (int i = 0; i < NUM_LEDS; i++) {
     unsigned int wval = 128;
@@ -330,8 +323,6 @@ void xpulses_loop() {
       whue = 256-whue;
     }
     
-    unsigned int wsat = MAXBRIGHT;
-    // if (thewave > 250) { wsat = 0; }
     leds[i] = CHSV(whue, MAXBRIGHT, wval);
 
   }
@@ -541,8 +532,6 @@ void next_mode() {
 }
 
 void prev_mode() {
-  struct ledmode *thismode = &modes[modeno];
-
   if (0==modeno) {
       modeno = sizeof(modes)/sizeof(struct ledmode) -2;
   } else {
@@ -573,7 +562,7 @@ void sync_taps() {
 
   float st = 0.0;
   float snt = 0.0;
-  for (int i=0;i<ntaps;i++) {
+  for (size_t i=0;i<ntaps;i++) {
     st = st + (float)taps[i];
     snt = snt + ((float)i)*(float)taps[i];
   }
