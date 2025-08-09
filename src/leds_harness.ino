@@ -1,5 +1,6 @@
 #include <FastLED.h>
 #include <Arduino.h>
+#include <rgb2lab.h>
 #define NUM_LEDS 50
 #define DATA_PIN 14
 #define BUTTON_PIN 4
@@ -87,7 +88,7 @@ void meteor_loop() {
     if ( (m<0) || (m>mlen)) {
       leds[i] = CRGB(0,0,0);
     } else if (0==m) {
-      leds[i] = CRGB(255,255,255);
+      leds[i] = CRGB(128,128,128);
     } else if (m<(mlen/3)) {
       leds[i] = CHSV(whue,255,MAXBRIGHT);
     } else if (m<mlen) {
@@ -166,10 +167,10 @@ void testflash_loop_cvp() {
     unsigned int flashms = 500;
     unsigned int t = millis()-tap_t0;
     if (0==((t/tap_tau)%2)) {
-      cpv(0, MAXBRIGHT, 0, perRed, perGreen, perBlue);
+      cpv(0, 0, MAXBRIGHT, perRed, perGreen, perBlue);
       all_color(perRed, perGreen, perBlue);
     } else {
-      cpv(0, 0, MAXBRIGHT, perRed, perGreen, perBlue);
+      cpv(0, MAXBRIGHT, 0, perRed, perGree nn, perBlue);
       all_color(perRed, perGreen, perBlue);
           }
 }
@@ -178,9 +179,9 @@ void testflash_loop() {
     unsigned int flashms = 500;
     unsigned int t = millis()-tap_t0;
     if (0==((t/tap_tau)%2)) {
-      all_color(0, 128, 0);
-    } else {
       all_color(0, 0, 128);
+    } else {
+      all_color(0,128,0);
           }
 }
 
@@ -202,7 +203,7 @@ void rainbow_loop() {
 
 void rwave_loop() {
   float t = (millis()-tap_t0)/1000.0;
-  float lambda0 = 128.0;
+  float lambda0 = 80.0;
   float tau0 = tap_tau/1000.0;
   float lambda1 = 200.0;
   float tau1 = 900.0;
@@ -247,8 +248,8 @@ void lines_loop() {
 // Pulsing rainbows going outwards
 void radiate_loop() {
   float t = (millis() - tap_t0)/1000.0;
-  float lambda0 = 50.0;
-  float lambda1 = 200.0;
+  float lambda0 = MAXBRIGHT;
+  float lambda1 = MAXBRIGHT * 1.56;
   float tau0 = tap_tau/1000.0;
 
   for (int i = 0; i < NUM_LEDS; i++) {
@@ -278,8 +279,7 @@ void smoothlines_loop() {
     //if (wval<64) { wval = 0; } else { wval /= 2; }
 
     leds[i] = CHSV(whue, 255, wval);
-  }
-
+}
 }
 
 void pulses_loop() {
@@ -291,7 +291,7 @@ void pulses_loop() {
   for (int i = 0; i < NUM_LEDS; i++) {
 
     unsigned int thewave = wave(i,t,lambda0,tau0) ;
-    unsigned int whue = wave(0,t,lambda1,60.0);
+    unsigned int whue = wave(0,t,lambda1,128.0);
     unsigned int wval = MAXBRIGHT>>1;
     int wave_on = 0;
 
@@ -345,20 +345,19 @@ struct ledmode modes[] = {
   // { NULL, dark_loop, false } , // uncomment to make the initial state dark
 
 
- { NULL, rainbow_loop, true },
-
- { NULL, smoothlines_loop, true },
- { NULL, lines_loop, false },
- { NULL, radiate_loop, true },
-  { NULL, pulses_loop, true },
-  { NULL, testflash_loop, true},
+  { NULL, rainbow_loop, false },
+  { NULL, smoothlines_loop, false },
+  { NULL, lines_loop, false },
+  { NULL, radiate_loop, false },
+  { NULL, pulses_loop, false },
+  // { NULL, testflash_loop, true},
   {NULL, testflash_loop_cvp, true},
-  { NULL, testred_loop, false},
-  { NULL, stripes_init, true},
-  { NULL, meteor_loop, true},
+  // { NULL, testred_loop, false},
+  //{ NULL, stripes_init, true},
+  { NULL, meteor_loop, false},
   { NULL, xpulses_loop, true},
   { NULL, rwave_loop, true},
-  { NULL, dark_loop, false },
+  //{ NULL, dark_loop, false },
  
   { NULL, NULL, false },
 };
@@ -650,6 +649,7 @@ void process_button() {
 void setup() {
   pinMode(BUTTON_PIN,INPUT);
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS + NUM_HEX_LEDS);
+  FastLED.setCorrection(TypicalLEDStrip);
   Serial.begin(9600);
 }
 
@@ -721,6 +721,8 @@ void loop() {
   FastLED.show();
   Serial.write('*');
   //Serial.println(modeno);
+  Serial.println("sync_mode");
+  Serial.println(sync_mode);
   //Serial.println(tap_t0);
   //Serial.println(tap_tau);
   //Serial.println(ntaps);

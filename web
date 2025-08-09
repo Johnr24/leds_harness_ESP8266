@@ -1,0 +1,37 @@
+void handleRoot() {
+  String html = "<html><body>";
+  html += "<h1>LEDs Harness Configuration</h1>";
+  html += "<form action='/setmaxbright' method='POST'>";
+  html += "<label for='maxbright'>Max Brightness:</label>";
+  html += "<input type='number' id='maxbright' name='maxbright' min='0' max='255'>";
+  html += "<input type='submit' value='Submit'>";
+  html += "</form>";
+  html += "</body></html>";
+  server.send(200, "text/html", html);
+}
+
+void handleSetMaxBright() {
+  if (server.hasArg("maxbright")) {
+    int maxbright = server.arg("maxbright").toInt();
+    // TODO: Update the maxbright parameter in your code
+    server.send(200, "text/plain", "Max Brightness updated successfully");
+  } else {
+    server.send(400, "text/plain", "Bad Request");
+  }
+}
+
+void setupWiFiAP() {
+  WiFi.softAP(ssid, password);
+  IPAddress ip = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(ip);
+}
+
+void setup() {
+  // Your existing setup code
+  
+  // Start the web server
+  server.on("/", handleRoot);
+  server.on("/setmaxbright", handleSetMaxBright);
+  server.begin();
+}
