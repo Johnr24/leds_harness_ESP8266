@@ -610,10 +610,14 @@ void process_button() {
   // Check for long press
   if ( (!in_long_press) && (HIGH == reading) && ( (now - last_debounce_time) > long_press_ms) ) {
     in_long_press = true;
-    if (!sync_mode) {
+    if (sync_mode) {
+        // Exit sync mode on long press
+        sync_mode = false;
+        ntaps = 0;
+    } else {
         prev_mode(); // undo next-mode
+        sync_mode = true;
     }
-    sync_mode = true;
 
   } else {
     in_long_press = false;
@@ -706,6 +710,9 @@ void loop() {
    do_hex();
    if (sync_mode) {
      draw_sync_mode();
+   } else {
+     // Reset tap counter when exiting sync mode
+     ntaps = 0;
    }
   FastLED.show();
   Serial.write('*');
