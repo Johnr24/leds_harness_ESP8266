@@ -6,4 +6,6 @@
    - In sync mode: Exit without saving taps
 3. **In Sync Mode**:
    - Short presses record taps for tempo synchronization
-   - After 8 taps, tempo is calculated automatically
+   - Central hexagon shows current tap count (1-7)
+   - Triangles flash with calculated tempo
+   - After 8 taps, tempo is calculated automatically and sync mode exits
