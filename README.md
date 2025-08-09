@@ -2,11 +2,6 @@
 
 This project controls LED animations synchronized to button presses using an ESP8266 microcontroller.
 
-## Features
-- Multiple LED animation modes
-- Tap synchronization for tempo matching
-- Central hexagon visualization
-
 ## Hardware Requirements
 - ESP8266 microcontroller
 - Addressable LED strip (WS2812B or compatible)
